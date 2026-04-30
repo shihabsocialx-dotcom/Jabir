@@ -331,6 +331,13 @@
           btn.innerText = "إصدار الشهادة (PDF)";
           btn.disabled = false;
         });
+      };
+
+      bgImg.onerror = () => {
+        alert("عذراً! لم نتمكن من تحميل صورة الخلفية عالية الدقة. تأكد من وجود الملف.");
+        btn.innerText = "إصدار الشهادة (PDF)";
+        btn.disabled = false;
+      };
     }
   </script>
 
