@@ -74,7 +74,7 @@
     }
 
     .gender-selection input[type="radio"] {
-      display: none; /* Hide default radio buttons */
+      display: none;
     }
 
     .gender-selection span {
@@ -197,7 +197,7 @@
     
     #nameOverlay {
       position: absolute;
-      top: 250px; 
+      top: 250px; /* Adjust if needed to fit your exact design */
       width: 100%;
       text-align: center;
       font-size: 32px;
@@ -230,6 +230,7 @@
 
   <!-- NAVBAR SECTION -->
   <div class="top-navbar">
+    <!-- Ensure 'logo.svg' is saved in your folder -->
     <img src="logo.svg" alt="مؤسسة الإمام جابر بن زيد الوقفية">
   </div>
 
@@ -240,15 +241,13 @@
       <p class="subtitle">مؤسسة الإمام جابر بن زيد الوقفية</p>
     </div>
 
-    <!-- NEW GENDER SELECTION -->
+    <!-- GENDER SELECTION -->
     <div class="gender-selection">
       <label>
-        <!-- Change value="Certificate-Men.png" to your exact file name if different -->
         <input type="radio" name="certificateType" value="Certificate-Men.png" checked onchange="changeCertificate(this.value)">
         <span>شهادة للرجال</span>
       </label>
       <label>
-        <!-- Change value="Certificate-Women.png" to your exact file name if different -->
         <input type="radio" name="certificateType" value="Certificate-Women.png" onchange="changeCertificate(this.value)">
         <span>شهادة للنساء</span>
       </label>
@@ -268,7 +267,7 @@
   </div>
 
   <script>
-    // Function to dynamically swap the background image when clicking the radio buttons
+    // Dynamically swap the background image when clicking the radio buttons
     function changeCertificate(imageFile) {
       document.getElementById("card").style.backgroundImage = `url('${imageFile}')`;
     }
@@ -286,20 +285,28 @@
       btn.innerText = "جاري الإصدار...";
       btn.disabled = true;
 
-      // Temporarily remove scaling before capture so html2canvas renders full resolution
       const card = document.getElementById("card");
-      card.style.transform = "none";
 
-     // Increase scale to 4 or 5 for print-quality, high-definition resolution
+      // ADVANCED SETTINGS FOR MAXIMUM SHARPNESS
       html2canvas(card, { 
         useCORS: true, 
-        scale: 4, 
+        scale: 4, // 4x High Definition resolution
         allowTaint: true,
-        backgroundColor: null 
+        backgroundColor: "#ffffff",
+        onclone: (clonedDocument) => {
+          // This forces the hidden cloned card to be 100% full size before taking the picture,
+          // ignoring mobile screen shrinking that causes blurriness.
+          const clonedCard = clonedDocument.getElementById("card");
+          clonedCard.style.transform = "none";
+          clonedCard.style.width = "841.89px";
+          clonedCard.style.height = "595.276px";
+        }
       }).then(canvas => {
         canvas.toBlob(function(blob) {
           const downloadUrl = URL.createObjectURL(blob);
-          const imageData = canvas.toDataURL("image/png", 1.0); // Force max quality PNG
+          
+          // Force highest quality PNG rendering
+          const imageData = canvas.toDataURL("image/png", 1.0); 
 
           // Create the final flattened image to display on screen
           const resultImg = document.createElement("img");
@@ -356,7 +363,6 @@
         console.error(err);
         btn.innerText = "إصدار الشهادة";
         btn.disabled = false;
-        card.style.transform = ""; 
       });
     }
   </script>
