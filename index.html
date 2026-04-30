@@ -5,12 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>شهادة حضور - مؤسسة الإمام جابر بن زيد الوقفية</title>
   
-  <!-- NEW: The two ultimate libraries for perfect PDF generation -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   
   <style>
-    /* Design System CSS Variables */
     :root {
       --color-gold: #D4AF37;
       --color-deep-blue: #1A3A52;
@@ -30,7 +28,6 @@
       padding: 0; 
     }
     
-    /* Navbar Styling */
     .top-navbar {
       background-color: #ffffff;
       height: 80px;
@@ -45,7 +42,6 @@
       max-width: 100%;
     }
 
-    /* Main content wrapper */
     .main-content {
       text-align: center;
       padding: 40px 20px; 
@@ -69,7 +65,6 @@
       margin-bottom: 24px;
     }
 
-    /* Gender Selection Toggle */
     .gender-selection {
       display: flex;
       justify-content: center;
@@ -101,7 +96,6 @@
       box-shadow: 0 4px 12px rgba(212, 175, 55, 0.2);
     }
 
-    /* Form Input Styling */
     .form-group {
       margin-bottom: 24px;
     }
@@ -125,7 +119,6 @@
       box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.1);
     }
 
-    /* Button Styling */
     button {
       background-color: var(--color-gold);
       color: var(--color-deep-blue);
@@ -162,7 +155,6 @@
       color: var(--color-deep-blue);
     }
 
-    /* Certificate Card Styling */
     #cardWrapper {
       width: 100%;
       max-width: 841.89px; 
@@ -181,7 +173,7 @@
       background-size: cover;
       background-position: center;
       transform-origin: top center; 
-      background-color: #ffffff;
+      background-color: transparent;
       border-radius: 8px;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
       transition: background-image 300ms ease-in-out;
@@ -220,19 +212,16 @@
 </head>
 <body>
 
-  <!-- NAVBAR SECTION -->
   <div class="top-navbar">
     <img src="logo.svg" alt="مؤسسة الإمام جابر بن زيد الوقفية">
   </div>
 
-  <!-- MAIN CONTENT -->
   <div class="main-content">
     <div class="header-container">
       <h2>ندوة القرآن وبناء الإنسان</h2>
       <p class="subtitle">مؤسسة الإمام جابر بن زيد الوقفية</p>
     </div>
 
-    <!-- GENDER SELECTION -->
     <div class="gender-selection">
       <label>
         <input type="radio" name="certificateType" value="Certificate-Men.png" checked onchange="changeCertificate(this.value)">
@@ -276,59 +265,72 @@
       btn.disabled = true;
 
       const card = document.getElementById("card");
+      const imageFile = document.querySelector('input[name="certificateType"]:checked').value;
+
+      // 1. Create a native image object to pull the raw, untouched file
+      const bgImg = new Image();
+      bgImg.crossOrigin = "Anonymous"; // Prevents security blocks
+      bgImg.src = imageFile;
       
-     // 1. Take a flawless, 4K resolution picture of the certificate
-      html2canvas(card, {
-        scale: 4, // 4x High Def rendering
-        useCORS: true, 
-        allowTaint: true,
-        backgroundColor: "#ffffff",
-        onclone: (clonedDocument) => {
-          const clonedCard = clonedDocument.getElementById("card");
-          clonedCard.style.transform = "none";
-          clonedCard.style.margin = "0";
-          clonedCard.style.width = "841.89px";
-          clonedCard.style.height = "595.276px";
-        }
-      }).then(canvas => {
-        // CHANGED TO PNG: Prevents any compression blurriness
-        const imgData = canvas.toDataURL("image/png");
-        
+      // When the raw image loads, we build the PDF
+      bgImg.onload = () => {
         const { jsPDF } = window.jspdf;
         const pdf = new jsPDF('l', 'mm', 'a4');
-        
         const pdfWidth = pdf.internal.pageSize.getWidth();
         const pdfHeight = pdf.internal.pageSize.getHeight();
-        
-        // CHANGED TO PNG: Injects the uncompressed HD image into the PDF
-        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-        
-        pdf.save("شهادة-حضور-" + name.replace(/\s+/g, '-') + ".pdf");
-        
-        const mainContent = document.querySelector(".main-content");
-        mainContent.innerHTML = `
-          <div class="header-container" style="margin-top: 40px;">
-            <h2 style="color: var(--color-success);">🎉 تم تحميل شهادتك بنجاح!</h2>
-            <p style="font-size: 18px; color: var(--color-charcoal); margin-top: 16px;">
-              لقد تم حفظ الشهادة كملف <strong>PDF</strong> عالي الدقة، وهي مكونة من صفحة واحدة فقط جاهزة للطباعة.
-            </p>
-          </div>
-        `;
 
-        const reloadBtn = document.createElement("button");
-        reloadBtn.className = "btn-secondary";
-        reloadBtn.innerText = "إصدار شهادة أخرى";
-        reloadBtn.style.display = "block";
-        reloadBtn.style.margin = "40px auto";
-        reloadBtn.onclick = () => window.location.reload();
-        mainContent.appendChild(reloadBtn);
+        // 2. Add the RAW, uncompressed background image directly into the PDF document
+        pdf.addImage(bgImg, 'PNG', 0, 0, pdfWidth, pdfHeight);
 
-      }).catch(err => {
-        alert("عذراً! حدث خطأ أثناء إصدار الشهادة.");
-        console.error(err);
-        btn.innerText = "إصدار الشهادة (PDF)";
-        btn.disabled = false;
-      });
+        // 3. Take a picture of ONLY the text layer (making the background perfectly transparent)
+        html2canvas(card, {
+          scale: 4, // 4x High Def text rendering
+          useCORS: true, 
+          backgroundColor: null, // Forces a transparent canvas
+          onclone: (clonedDocument) => {
+            const clonedCard = clonedDocument.getElementById("card");
+            clonedCard.style.transform = "none";
+            clonedCard.style.margin = "0";
+            clonedCard.style.width = "841.89px";
+            clonedCard.style.height = "595.276px";
+            // Strip the background from the clone so it captures only the floating text
+            clonedCard.style.backgroundImage = "none";
+            clonedCard.style.backgroundColor = "transparent";
+          }
+        }).then(canvas => {
+          const textImgData = canvas.toDataURL("image/png");
+          
+          // 4. Slap the transparent text layer perfectly over the high-res background
+          pdf.addImage(textImgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+          
+          // 5. Download the final PDF
+          pdf.save("شهادة-حضور-" + name.replace(/\s+/g, '-') + ".pdf");
+          
+          // Update UI
+          const mainContent = document.querySelector(".main-content");
+          mainContent.innerHTML = `
+            <div class="header-container" style="margin-top: 40px;">
+              <h2 style="color: var(--color-success);">🎉 تم تحميل شهادتك بنجاح!</h2>
+              <p style="font-size: 18px; color: var(--color-charcoal); margin-top: 16px;">
+                لقد تم حفظ الشهادة كملف <strong>PDF</strong> عالي الدقة.
+              </p>
+            </div>
+          `;
+
+          const reloadBtn = document.createElement("button");
+          reloadBtn.className = "btn-secondary";
+          reloadBtn.innerText = "إصدار شهادة أخرى";
+          reloadBtn.style.display = "block";
+          reloadBtn.style.margin = "40px auto";
+          reloadBtn.onclick = () => window.location.reload();
+          mainContent.appendChild(reloadBtn);
+
+        }).catch(err => {
+          alert("عذراً! حدث خطأ أثناء إضافة النص.");
+          console.error(err);
+          btn.innerText = "إصدار الشهادة (PDF)";
+          btn.disabled = false;
+        });
     }
   </script>
 
