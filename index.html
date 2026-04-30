@@ -4,7 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>شهادة حضور - مؤسسة الإمام جابر بن زيد الوقفية</title>
-  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  
+  <!-- NEW: Replaced html2canvas with html2pdf library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  
   <style>
     /* Design System CSS Variables */
     :root {
@@ -158,21 +161,10 @@
       color: var(--color-deep-blue);
     }
 
-    .btn-success {
-      background-color: var(--color-success);
-      color: white;
-      font-size: 18px;
-    }
-    
-    .btn-success:hover:not(:disabled) {
-      background-color: #27ae60;
-      box-shadow: 0 4px 12px rgba(46, 204, 113, 0.3);
-    }
-
     /* Certificate Card Styling */
     #cardWrapper {
       width: 100%;
-      max-width: 841.89px;
+      max-width: 841.89px; /* Standard A4 Landscape Width */
       margin: 20px auto;
       overflow: hidden;
       display: flex;
@@ -181,10 +173,9 @@
 
     #card {
       width: 841.89px;
-      height: 595.276px;
+      height: 595.276px; /* Standard A4 Landscape Height */
       flex-shrink: 0; 
       position: relative;
-      /* Default background image is set to Men */
       background-image: url('Certificate-Men.png'); 
       background-size: cover;
       background-position: center;
@@ -197,12 +188,13 @@
     
     #nameOverlay {
       position: absolute;
-      top: 250px; /* Adjust if needed to fit your exact design */
+      top: 250px; 
       width: 100%;
       text-align: center;
       font-size: 32px;
       font-weight: 700;
       color: var(--color-warm-gray);
+      direction: rtl; /* Enforce RTL rendering for PDF engine */
     }
 
     @media (max-width: 800px) {
@@ -230,7 +222,6 @@
 
   <!-- NAVBAR SECTION -->
   <div class="top-navbar">
-    <!-- Ensure 'logo.svg' is saved in your folder -->
     <img src="logo.svg" alt="مؤسسة الإمام جابر بن زيد الوقفية">
   </div>
 
@@ -257,7 +248,8 @@
       <input type="text" id="nameInput" placeholder="أدخل اسمك الكامل هنا...">
     </div>
     
-    <button onclick="generateCard()">إصدار الشهادة</button>
+    <!-- Changed button text to indicate PDF -->
+    <button onclick="generateCard()">إصدار الشهادة (PDF)</button>
 
     <div id="cardWrapper">
       <div id="card">
@@ -267,7 +259,6 @@
   </div>
 
   <script>
-    // Dynamically swap the background image when clicking the radio buttons
     function changeCertificate(imageFile) {
       document.getElementById("card").style.backgroundImage = `url('${imageFile}')`;
     }
@@ -286,83 +277,60 @@
       btn.disabled = true;
 
       const card = document.getElementById("card");
+      
+      // Temporarily remove CSS scaling so the PDF engine sees the full A4 size
+      const originalTransform = card.style.transform;
+      card.style.transform = "none";
 
-      // ADVANCED SETTINGS FOR MAXIMUM SHARPNESS
-      html2canvas(card, { 
-        useCORS: true, 
-        scale: 4, // 4x High Definition resolution
-        allowTaint: true,
-        backgroundColor: "#ffffff",
-        onclone: (clonedDocument) => {
-          // This forces the hidden cloned card to be 100% full size before taking the picture,
-          // ignoring mobile screen shrinking that causes blurriness.
-          const clonedCard = clonedDocument.getElementById("card");
-          clonedCard.style.transform = "none";
-          clonedCard.style.width = "841.89px";
-          clonedCard.style.height = "595.276px";
+      // PDF Configuration Options
+      const pdfOptions = {
+        margin:       0,
+        filename:     'شهادة-حضور-' + name.replace(/\s+/g, '-') + '.pdf',
+        image:        { type: 'jpeg', quality: 1.0 }, // Maximum quality JPEG for background
+        html2canvas:  { 
+          scale: 4, // 4x High Def rendering
+          useCORS: true, 
+          allowTaint: true,
+          letterRendering: true // Helps with Arabic text sharpness
+        },
+        jsPDF:        { 
+          unit: 'px', 
+          format: [841.89, 595.276], // Exact A4 Landscape pixel dimensions
+          orientation: 'landscape' 
         }
-      }).then(canvas => {
-        canvas.toBlob(function(blob) {
-          const downloadUrl = URL.createObjectURL(blob);
-          
-          // Force highest quality PNG rendering
-          const imageData = canvas.toDataURL("image/png", 1.0); 
+      };
 
-          // Create the final flattened image to display on screen
-          const resultImg = document.createElement("img");
-          resultImg.src = imageData;
-          resultImg.style.width = "100%";
-          resultImg.style.maxWidth = "600px";
-          resultImg.style.marginTop = "20px";
-          resultImg.style.borderRadius = "8px";
-          resultImg.style.boxShadow = "0 8px 16px rgba(0, 0, 0, 0.15)";
-
-          // Target main-content to replace UI safely below the navbar
-          const mainContent = document.querySelector(".main-content");
-          mainContent.innerHTML = `
-            <div class="header-container" style="margin-top: 20px;">
-              <h2 style="color: var(--color-success);">🎉 شهادتك جاهزة!</h2>
-              <p style="font-size: 16px; color: var(--color-charcoal); font-weight: 600; margin-top: 16px;">
-                📱 لمستخدمي الجوال: اضغط مطولاً على الصورة لحفظها.<br><br>
-                💻 لمستخدمي الحاسب: انقر على زر التحميل أدناه.
-              </p>
-            </div>
-          `;
-          
-          mainContent.appendChild(resultImg);
-
-          // Create the dedicated Download Button
-          const downloadBtn = document.createElement("button");
-          downloadBtn.className = "btn-success";
-          downloadBtn.innerText = "⬇️ تحميل الشهادة";
-          downloadBtn.style.display = "block";
-          downloadBtn.style.margin = "32px auto 16px auto";
-          downloadBtn.onclick = () => {
-            const link = document.createElement("a");
-            link.href = downloadUrl;
-            link.download = "شهادة-حضور-" + name.replace(/\s+/g, '-') + ".png";
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-          };
-          mainContent.appendChild(downloadBtn);
-
-          // Add a button to start over
-          const reloadBtn = document.createElement("button");
-          reloadBtn.className = "btn-secondary";
-          reloadBtn.innerText = "إصدار شهادة أخرى";
-          reloadBtn.style.display = "block";
-          reloadBtn.style.margin = "16px auto";
-          reloadBtn.onclick = () => window.location.reload();
-          mainContent.appendChild(reloadBtn);
-
-        }, "image/png");
+      // Generate the PDF directly and save it to the user's device
+      html2pdf().set(pdfOptions).from(card).save().then(() => {
+        // Restore the screen shrinking for mobile viewing after download triggers
+        card.style.transform = originalTransform;
         
+        // Target main-content to replace UI
+        const mainContent = document.querySelector(".main-content");
+        mainContent.innerHTML = `
+          <div class="header-container" style="margin-top: 40px;">
+            <h2 style="color: var(--color-success);">🎉 تم تحميل شهادتك بنجاح!</h2>
+            <p style="font-size: 18px; color: var(--color-charcoal); margin-top: 16px;">
+              لقد تم حفظ الشهادة كملف <strong>PDF</strong> عالي الدقة على جهازك.
+            </p>
+          </div>
+        `;
+
+        // Add a button to start over
+        const reloadBtn = document.createElement("button");
+        reloadBtn.className = "btn-secondary";
+        reloadBtn.innerText = "إصدار شهادة أخرى";
+        reloadBtn.style.display = "block";
+        reloadBtn.style.margin = "40px auto";
+        reloadBtn.onclick = () => window.location.reload();
+        mainContent.appendChild(reloadBtn);
+
       }).catch(err => {
         alert("عذراً! حدث خطأ أثناء إصدار الشهادة.");
         console.error(err);
-        btn.innerText = "إصدار الشهادة";
+        btn.innerText = "إصدار الشهادة (PDF)";
         btn.disabled = false;
+        card.style.transform = originalTransform; 
       });
     }
   </script>
