@@ -277,15 +277,13 @@
 
       const card = document.getElementById("card");
       
-      // 1. Take a flawless, 4K resolution picture of the certificate
+     // 1. Take a flawless, 4K resolution picture of the certificate
       html2canvas(card, {
         scale: 4, // 4x High Def rendering
         useCORS: true, 
         allowTaint: true,
         backgroundColor: "#ffffff",
         onclone: (clonedDocument) => {
-          // Force the hidden cloned card to be exactly full size before capturing,
-          // ensuring it completely ignores mobile screen shrinking and margins.
           const clonedCard = clonedDocument.getElementById("card");
           clonedCard.style.transform = "none";
           clonedCard.style.margin = "0";
@@ -293,24 +291,20 @@
           clonedCard.style.height = "595.276px";
         }
       }).then(canvas => {
-        // Convert the canvas to a maximum quality JPEG image
-        const imgData = canvas.toDataURL("image/jpeg", 1.0);
+        // CHANGED TO PNG: Prevents any compression blurriness
+        const imgData = canvas.toDataURL("image/png");
         
-        // 2. Initialize jsPDF (Landscape, millimeters, standard A4 size)
         const { jsPDF } = window.jspdf;
         const pdf = new jsPDF('l', 'mm', 'a4');
         
-        // Get exact dimensions of an A4 page (297mm x 210mm)
         const pdfWidth = pdf.internal.pageSize.getWidth();
         const pdfHeight = pdf.internal.pageSize.getHeight();
         
-        // 3. Stretch the massive image perfectly from corner to corner (0 margins)
-        pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
+        // CHANGED TO PNG: Injects the uncompressed HD image into the PDF
+        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
         
-        // 4. Force download immediately
         pdf.save("شهادة-حضور-" + name.replace(/\s+/g, '-') + ".pdf");
         
-        // 5. Update UI to show success
         const mainContent = document.querySelector(".main-content");
         mainContent.innerHTML = `
           <div class="header-container" style="margin-top: 40px;">
@@ -321,7 +315,6 @@
           </div>
         `;
 
-        // Add a button to start over
         const reloadBtn = document.createElement("button");
         reloadBtn.className = "btn-secondary";
         reloadBtn.innerText = "إصدار شهادة أخرى";
