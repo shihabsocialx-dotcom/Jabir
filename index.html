@@ -290,10 +290,16 @@
       const card = document.getElementById("card");
       card.style.transform = "none";
 
-      html2canvas(card, { useCORS: true, scale: 2 }).then(canvas => {
+     // Increase scale to 4 or 5 for print-quality, high-definition resolution
+      html2canvas(card, { 
+        useCORS: true, 
+        scale: 4, 
+        allowTaint: true,
+        backgroundColor: null 
+      }).then(canvas => {
         canvas.toBlob(function(blob) {
           const downloadUrl = URL.createObjectURL(blob);
-          const imageData = canvas.toDataURL("image/png");
+          const imageData = canvas.toDataURL("image/png", 1.0); // Force max quality PNG
 
           // Create the final flattened image to display on screen
           const resultImg = document.createElement("img");
