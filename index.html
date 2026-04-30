@@ -5,8 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>شهادة حضور - مؤسسة الإمام جابر بن زيد الوقفية</title>
   
-  <!-- NEW: Replaced html2canvas with html2pdf library -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <!-- NEW: The two ultimate libraries for perfect PDF generation -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   
   <style>
     /* Design System CSS Variables */
@@ -164,7 +165,7 @@
     /* Certificate Card Styling */
     #cardWrapper {
       width: 100%;
-      max-width: 841.89px; /* Standard A4 Landscape Width */
+      max-width: 841.89px; 
       margin: 20px auto;
       overflow: hidden;
       display: flex;
@@ -173,7 +174,7 @@
 
     #card {
       width: 841.89px;
-      height: 595.276px; /* Standard A4 Landscape Height */
+      height: 595.276px; 
       flex-shrink: 0; 
       position: relative;
       background-image: url('Certificate-Men.png'); 
@@ -194,7 +195,6 @@
       font-size: 32px;
       font-weight: 700;
       color: var(--color-warm-gray);
-      direction: rtl; /* Enforce RTL rendering for PDF engine */
     }
 
     @media (max-width: 800px) {
@@ -248,7 +248,6 @@
       <input type="text" id="nameInput" placeholder="أدخل اسمك الكامل هنا...">
     </div>
     
-    <!-- Changed button text to indicate PDF -->
     <button onclick="generateCard()">إصدار الشهادة (PDF)</button>
 
     <div id="cardWrapper">
@@ -278,40 +277,46 @@
 
       const card = document.getElementById("card");
       
-      // Temporarily remove CSS scaling so the PDF engine sees the full A4 size
-      const originalTransform = card.style.transform;
-      card.style.transform = "none";
-
-      // PDF Configuration Options
-      const pdfOptions = {
-        margin:       0,
-        filename:     'شهادة-حضور-' + name.replace(/\s+/g, '-') + '.pdf',
-        image:        { type: 'jpeg', quality: 1.0 }, // Maximum quality JPEG for background
-        html2canvas:  { 
-          scale: 4, // 4x High Def rendering
-          useCORS: true, 
-          allowTaint: true,
-          letterRendering: true // Helps with Arabic text sharpness
-        },
-        jsPDF:        { 
-          unit: 'px', 
-          format: [841.89, 595.276], // Exact A4 Landscape pixel dimensions
-          orientation: 'landscape' 
+      // 1. Take a flawless, 4K resolution picture of the certificate
+      html2canvas(card, {
+        scale: 4, // 4x High Def rendering
+        useCORS: true, 
+        allowTaint: true,
+        backgroundColor: "#ffffff",
+        onclone: (clonedDocument) => {
+          // Force the hidden cloned card to be exactly full size before capturing,
+          // ensuring it completely ignores mobile screen shrinking and margins.
+          const clonedCard = clonedDocument.getElementById("card");
+          clonedCard.style.transform = "none";
+          clonedCard.style.margin = "0";
+          clonedCard.style.width = "841.89px";
+          clonedCard.style.height = "595.276px";
         }
-      };
-
-      // Generate the PDF directly and save it to the user's device
-      html2pdf().set(pdfOptions).from(card).save().then(() => {
-        // Restore the screen shrinking for mobile viewing after download triggers
-        card.style.transform = originalTransform;
+      }).then(canvas => {
+        // Convert the canvas to a maximum quality JPEG image
+        const imgData = canvas.toDataURL("image/jpeg", 1.0);
         
-        // Target main-content to replace UI
+        // 2. Initialize jsPDF (Landscape, millimeters, standard A4 size)
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF('l', 'mm', 'a4');
+        
+        // Get exact dimensions of an A4 page (297mm x 210mm)
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfHeight = pdf.internal.pageSize.getHeight();
+        
+        // 3. Stretch the massive image perfectly from corner to corner (0 margins)
+        pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
+        
+        // 4. Force download immediately
+        pdf.save("شهادة-حضور-" + name.replace(/\s+/g, '-') + ".pdf");
+        
+        // 5. Update UI to show success
         const mainContent = document.querySelector(".main-content");
         mainContent.innerHTML = `
           <div class="header-container" style="margin-top: 40px;">
             <h2 style="color: var(--color-success);">🎉 تم تحميل شهادتك بنجاح!</h2>
             <p style="font-size: 18px; color: var(--color-charcoal); margin-top: 16px;">
-              لقد تم حفظ الشهادة كملف <strong>PDF</strong> عالي الدقة على جهازك.
+              لقد تم حفظ الشهادة كملف <strong>PDF</strong> عالي الدقة، وهي مكونة من صفحة واحدة فقط جاهزة للطباعة.
             </p>
           </div>
         `;
@@ -330,7 +335,6 @@
         console.error(err);
         btn.innerText = "إصدار الشهادة (PDF)";
         btn.disabled = false;
-        card.style.transform = originalTransform; 
       });
     }
   </script>
