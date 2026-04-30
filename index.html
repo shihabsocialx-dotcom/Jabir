@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>شهادة حضور - مؤسسة الإمام جابر بن زيد الوقفية</title>
-  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <!-- html2canvas removed: we now draw directly on Canvas for full resolution -->
   <style>
     /* Design System CSS Variables */
     :root {
@@ -268,7 +268,7 @@
   </div>
 
   <script>
-    // Function to dynamically swap the background image when clicking the radio buttons
+    // Swap preview background when gender selection changes
     function changeCertificate(imageFile) {
       document.getElementById("card").style.backgroundImage = `url('${imageFile}')`;
     }
@@ -280,31 +280,49 @@
         return;
       }
 
+      // Update preview name
       document.getElementById("nameOverlay").innerText = name;
-      
+
       const btn = document.querySelector("button");
       btn.innerText = "جاري الإصدار...";
       btn.disabled = true;
 
-      // Temporarily remove scaling before capture so html2canvas renders full resolution
-      const card = document.getElementById("card");
-      card.style.transform = "none";
+      // Get the currently selected certificate image file
+      const selectedType = document.querySelector('input[name="certificateType"]:checked').value;
 
-      html2canvas(card, { useCORS: true, scale: 2 }).then(canvas => {
-        canvas.toBlob(function(blob) {
+      // Load the original high-resolution image
+      const img = new Image();
+      img.src = selectedType;
+
+      img.onload = function () {
+        // Create canvas at the image's NATIVE resolution
+        const canvas = document.createElement("canvas");
+        canvas.width  = img.naturalWidth;
+        canvas.height = img.naturalHeight;
+
+        const ctx = canvas.getContext("2d");
+
+        // 1) Draw the full-res certificate background
+        ctx.drawImage(img, 0, 0);
+
+        // 2) Overlay the name text — scale font proportionally to image height
+        //    (32px was designed for a 595px tall element → ratio ≈ 0.0537)
+        const fontSize = Math.round(img.naturalHeight * 0.0537);
+        ctx.font = `700 ${fontSize}px "Dubai", "Droid Arabic Kufi", "Simplified Arabic", Tahoma, sans-serif`;
+        ctx.fillStyle = "#C9C5BD";
+        ctx.textAlign  = "center";
+        ctx.textBaseline = "middle";
+
+        // Name vertical position: 250/595 ≈ 42% down the card
+        const nameY = Math.round(img.naturalHeight * 0.42);
+        ctx.fillText(name, canvas.width / 2, nameY);
+
+        // 3) Export as high-quality PNG
+        canvas.toBlob(function (blob) {
           const downloadUrl = URL.createObjectURL(blob);
-          const imageData = canvas.toDataURL("image/png");
+          const imageData   = canvas.toDataURL("image/png");
 
-          // Create the final flattened image to display on screen
-          const resultImg = document.createElement("img");
-          resultImg.src = imageData;
-          resultImg.style.width = "100%";
-          resultImg.style.maxWidth = "600px";
-          resultImg.style.marginTop = "20px";
-          resultImg.style.borderRadius = "8px";
-          resultImg.style.boxShadow = "0 8px 16px rgba(0, 0, 0, 0.15)";
-
-          // Target main-content to replace UI safely below the navbar
+          // Show result screen
           const mainContent = document.querySelector(".main-content");
           mainContent.innerHTML = `
             <div class="header-container" style="margin-top: 20px;">
@@ -315,10 +333,17 @@
               </p>
             </div>
           `;
-          
+
+          const resultImg = document.createElement("img");
+          resultImg.src = imageData;
+          resultImg.style.width = "100%";
+          resultImg.style.maxWidth = "700px";
+          resultImg.style.marginTop = "20px";
+          resultImg.style.borderRadius = "8px";
+          resultImg.style.boxShadow = "0 8px 16px rgba(0,0,0,0.15)";
           mainContent.appendChild(resultImg);
 
-          // Create the dedicated Download Button
+          // Download button
           const downloadBtn = document.createElement("button");
           downloadBtn.className = "btn-success";
           downloadBtn.innerText = "⬇️ تحميل الشهادة";
@@ -334,7 +359,7 @@
           };
           mainContent.appendChild(downloadBtn);
 
-          // Add a button to start over
+          // Start-over button
           const reloadBtn = document.createElement("button");
           reloadBtn.className = "btn-secondary";
           reloadBtn.innerText = "إصدار شهادة أخرى";
@@ -344,14 +369,13 @@
           mainContent.appendChild(reloadBtn);
 
         }, "image/png");
-        
-      }).catch(err => {
-        alert("عذراً! حدث خطأ أثناء إصدار الشهادة.");
-        console.error(err);
+      };
+
+      img.onerror = function () {
+        alert("عذراً! تعذّر تحميل صورة الشهادة.");
         btn.innerText = "إصدار الشهادة";
         btn.disabled = false;
-        card.style.transform = ""; 
-      });
+      };
     }
   </script>
 
