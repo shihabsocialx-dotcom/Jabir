@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>شهادة حضور - مؤسسة الإمام جابر بن زيد الوقفية</title>
+  <!-- html2canvas removed: we now draw directly on Canvas for full resolution -->
+  <style>
+    /* Design System CSS Variables */
+    :root {
+      --color-gold: #D4AF37;
+      --color-deep-blue: #1A3A52;
+      --color-cream: #F5F1E8;
+      --color-charcoal: #2D2D2D;
+      --color-warm-gray: #C9C5BD;
+      --color-error: #E74C3C;
+      --color-success: #2ECC71;
+      --font-family-base: "Dubai", "Droid Arabic Kufi", "Simplified Arabic", "Segoe UI", "Tahoma", sans-serif;
+    }
+
+    body {
+      font-family: var(--font-family-base);
+      background-color: var(--color-cream);
+      color: var(--color-charcoal);
+      margin: 0;
+      padding: 0; 
+    }
+    
+    /* Navbar Styling */
+    .top-navbar {
+      background-color: #ffffff;
+      height: 80px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+      display: flex;
+      align-items: center;
+      padding: 0 48px;
+    }
+
+    .top-navbar img {
+      height: 50px; 
+      max-width: 100%;
+    }
+
+    /* Main content wrapper */
+    .main-content {
+      text-align: center;
+      padding: 40px 20px; 
+    }
+    
+    .header-container {
+      margin-bottom: 32px;
+    }
+
+    h2 {
+      color: var(--color-deep-blue);
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+      margin-top: 0;
+    }
+
+    p.subtitle {
+      font-size: 1.125rem;
+      color: var(--color-charcoal);
+      margin-bottom: 24px;
+    }
+
+    /* Gender Selection Toggle */
+    .gender-selection {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .gender-selection input[type="radio"] {
+      display: none; /* Hide default radio buttons */
+    }
+
+    .gender-selection span {
+      display: inline-block;
+      padding: 10px 32px;
+      border: 2px solid var(--color-warm-gray);
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 200ms ease;
+      font-weight: 600;
+      color: var(--color-charcoal);
+      font-size: 16px;
+      background-color: #ffffff;
+    }
+
+    .gender-selection input[type="radio"]:checked + span {
+      border-color: var(--color-gold);
+      background-color: var(--color-gold);
+      color: var(--color-deep-blue);
+      box-shadow: 0 4px 12px rgba(212, 175, 55, 0.2);
+    }
+
+    /* Form Input Styling */
+    .form-group {
+      margin-bottom: 24px;
+    }
+
+    input[type="text"] {
+      background-color: var(--color-cream);
+      border: 1px solid var(--color-warm-gray);
+      border-radius: 4px;
+      padding: 12px 16px;
+      font-size: 16px;
+      width: 80%;
+      max-width: 400px;
+      box-sizing: border-box;
+      font-family: var(--font-family-base);
+      transition: border-color 200ms ease, box-shadow 200ms ease;
+    }
+
+    input[type="text"]:focus {
+      border-color: var(--color-gold);
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.1);
+    }
+
+    /* Button Styling */
+    button {
+      background-color: var(--color-gold);
+      color: var(--color-deep-blue);
+      font-weight: 600;
+      padding: 12px 32px;
+      font-size: 16px;
+      border-radius: 4px;
+      border: none;
+      cursor: pointer;
+      transition: background-color 200ms ease, box-shadow 200ms ease;
+      font-family: var(--font-family-base);
+    }
+
+    button:hover:not(:disabled) {
+      background-color: #BFA02C;
+      box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3);
+    }
+
+    button:disabled {
+      background-color: #E8E6E0;
+      color: #999999;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
+    .btn-secondary {
+      background-color: transparent;
+      color: var(--color-gold);
+      border: 2px solid var(--color-gold);
+    }
+    
+    .btn-secondary:hover:not(:disabled) {
+      background-color: var(--color-gold);
+      color: var(--color-deep-blue);
+    }
+
+    .btn-success {
+      background-color: var(--color-success);
+      color: white;
+      font-size: 18px;
+    }
+    
+    .btn-success:hover:not(:disabled) {
+      background-color: #27ae60;
+      box-shadow: 0 4px 12px rgba(46, 204, 113, 0.3);
+    }
+
+    /* Certificate Card Styling */
+    #cardWrapper {
+      width: 100%;
+      max-width: 841.89px;
+      margin: 20px auto;
+      overflow: hidden;
+      display: flex;
+      justify-content: center; 
+    }
+
+    #card {
+      width: 841.89px;
+      height: 595.276px;
+      flex-shrink: 0; 
+      position: relative;
+      /* Default background image is set to Men */
+      background-image: url('Certificate-Men.png'); 
+      background-size: cover;
+      background-position: center;
+      transform-origin: top center; 
+      background-color: #ffffff;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      transition: background-image 300ms ease-in-out;
+    }
+    
+    #nameOverlay {
+      position: absolute;
+      top: 46%;
+      transform: translateY(-50%);
+      width: 100%;
+      text-align: center;
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--color-warm-gray);
+    }
+
+    @media (max-width: 800px) {
+      #card {
+        transform: scale(0.40); 
+        margin-bottom: -350px; 
+      }
+      h2 {
+        font-size: 2rem;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .top-navbar {
+        height: 64px;
+        padding: 0 16px;
+      }
+      .top-navbar img {
+        height: 40px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAVBAR SECTION -->
+  <div class="top-navbar">
+    <img src="logo.svg" alt="مؤسسة الإمام جابر بن زيد الوقفية">
+  </div>
+
+  <!-- MAIN CONTENT -->
+  <div class="main-content">
+    <div class="header-container">
+      <h2>ندوة القرآن وبناء الإنسان</h2>
+      <p class="subtitle">مؤسسة الإمام جابر بن زيد الوقفية</p>
+    </div>
+
+    <!-- NEW GENDER SELECTION -->
+    <div class="gender-selection">
+      <label>
+        <!-- Change value="Certificate-Men.png" to your exact file name if different -->
+        <input type="radio" name="certificateType" value="Certificate-Men.png" checked onchange="changeCertificate(this.value)">
+        <span>شهادة للرجال</span>
+      </label>
+      <label>
+        <!-- Change value="Certificate-Women.png" to your exact file name if different -->
+        <input type="radio" name="certificateType" value="Certificate-Women.png" onchange="changeCertificate(this.value)">
+        <span>شهادة للنساء</span>
+      </label>
+    </div>
+
+    <div class="form-group">
+      <input type="text" id="nameInput" placeholder="أدخل اسمك الكامل هنا...">
+    </div>
+    
+    <button onclick="generateCard()">إصدار الشهادة</button>
+
+    <div id="cardWrapper">
+      <div id="card">
+        <div id="nameOverlay">الاسم هنا</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Swap preview background when gender selection changes
+    function changeCertificate(imageFile) {
+      document.getElementById("card").style.backgroundImage = `url('${imageFile}')`;
+    }
+
+    function generateCard() {
+      const name = document.getElementById("nameInput").value.trim();
+      if (!name) {
+        alert("الرجاء إدخال الاسم أولاً.");
+        return;
+      }
+
+      // Update preview name
+      document.getElementById("nameOverlay").innerText = name;
+
+      const btn = document.querySelector("button");
+      btn.innerText = "جاري الإصدار...";
+      btn.disabled = true;
+
+      // Get the currently selected certificate image file
+      const selectedType = document.querySelector('input[name="certificateType"]:checked').value;
+
+      // Load the original high-resolution image
+      const img = new Image();
+      img.src = selectedType;
+
+      img.onload = function () {
+        // Create canvas at the image's NATIVE resolution
+        const canvas = document.createElement("canvas");
+        canvas.width  = img.naturalWidth;
+        canvas.height = img.naturalHeight;
+
+        const ctx = canvas.getContext("2d");
+
+        // 1) Draw the full-res certificate background
+        ctx.drawImage(img, 0, 0);
+
+        // 2) Overlay the name text — scale font proportionally to image height
+        //    Name line sits at ~48.3% of image height on both certificates
+        const fontSize = Math.round(img.naturalHeight * 0.0537);
+        ctx.font = `700 ${fontSize}px "Dubai", "Droid Arabic Kufi", "Simplified Arabic", Tahoma, sans-serif`;
+        ctx.fillStyle = "#C9C5BD";
+        ctx.textAlign  = "center";
+        ctx.textBaseline = "middle";
+
+        // Name vertical position: just above the dotted name line (~46% of height)
+        const nameY = Math.round(img.naturalHeight * 0.46);
+        ctx.fillText(name, canvas.width / 2, nameY);
+
+        // 3) Export as high-quality PNG
+        canvas.toBlob(function (blob) {
+          const downloadUrl = URL.createObjectURL(blob);
+          const imageData   = canvas.toDataURL("image/png");
+
+          // Show result screen
+          const mainContent = document.querySelector(".main-content");
+          mainContent.innerHTML = `
+            <div class="header-container" style="margin-top: 20px;">
+              <h2 style="color: var(--color-success);">🎉 شهادتك جاهزة!</h2>
+              <p style="font-size: 16px; color: var(--color-charcoal); font-weight: 600; margin-top: 16px;">
+                📱 لمستخدمي الجوال: اضغط مطولاً على الصورة لحفظها.<br><br>
+                💻 لمستخدمي الحاسب: انقر على زر التحميل أدناه.
+              </p>
+            </div>
+          `;
+
+          const resultImg = document.createElement("img");
+          resultImg.src = imageData;
+          resultImg.style.width = "100%";
+          resultImg.style.maxWidth = "700px";
+          resultImg.style.marginTop = "20px";
+          resultImg.style.borderRadius = "8px";
+          resultImg.style.boxShadow = "0 8px 16px rgba(0,0,0,0.15)";
+          mainContent.appendChild(resultImg);
+
+          // Download button
+          const downloadBtn = document.createElement("button");
+          downloadBtn.className = "btn-success";
+          downloadBtn.innerText = "⬇️ تحميل الشهادة";
+          downloadBtn.style.display = "block";
+          downloadBtn.style.margin = "32px auto 16px auto";
+          downloadBtn.onclick = () => {
+            const link = document.createElement("a");
+            link.href = downloadUrl;
+            link.download = "شهادة-حضور-" + name.replace(/\s+/g, '-') + ".png";
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+          };
+          mainContent.appendChild(downloadBtn);
+
+          // Start-over button
+          const reloadBtn = document.createElement("button");
+          reloadBtn.className = "btn-secondary";
+          reloadBtn.innerText = "إصدار شهادة أخرى";
+          reloadBtn.style.display = "block";
+          reloadBtn.style.margin = "16px auto";
+          reloadBtn.onclick = () => window.location.reload();
+          mainContent.appendChild(reloadBtn);
+
+        }, "image/png");
+      };
+
+      img.onerror = function () {
+        alert("عذراً! تعذّر تحميل صورة الشهادة.");
+        btn.innerText = "إصدار الشهادة";
+        btn.disabled = false;
+      };
+    }
+  </script>
+
+</body>
+</html>
